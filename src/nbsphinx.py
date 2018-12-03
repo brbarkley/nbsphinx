@@ -94,6 +94,13 @@ RST_TEMPLATE = """
 {% endif %}
 {%- endblock any_cell %}
 
+{% block input_group -%}                                                        
+{%- if cell.metadata.hide_input -%} 
+{%- else -%} 
+{{ super() }} 
+{%- endif -%} 
+{% endblock input_group %}
+
 
 {% block input -%}
 .. nbinput:: {% if cell.metadata.magics_language -%}
