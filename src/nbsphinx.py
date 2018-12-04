@@ -94,13 +94,6 @@ RST_TEMPLATE = """
 {% endif %}
 {%- endblock any_cell %}
 
-{% block input_group -%}                                                        
-{%- if cell.metadata.hide_input -%} 
-{%- else -%} 
-{{ super() }} 
-{%- endif -%} 
-{% endblock input_group %}
-
 
 {% block input -%}
 .. nbinput:: {% if cell.metadata.magics_language -%}
@@ -662,7 +655,9 @@ class Exporter(nbconvert.RSTExporter):
     """
 
     def __init__(self, execute='auto', kernel_name='', execute_arguments=[],
-                 allow_errors=False, timeout=30, codecell_lexer='none'):
+                 allow_errors=False, timeout=30, codecell_lexer='none',
+                 exclude_output = False, exclude_input = False,
+                 exclude_markdown = False, exclude_code_cell = False):
         """Initialize the Exporter."""
 
         # NB: The following stateful Jinja filters are a hack until
@@ -696,12 +691,23 @@ class Exporter(nbconvert.RSTExporter):
         self._timeout = timeout
         self._codecell_lexer = codecell_lexer
         loader = jinja2.DictLoader({'nbsphinx-rst.tpl': RST_TEMPLATE})
+        self._exclude_output = exclude_output
+        self._exclude_input = exclude_input
+        self._exclude_markdown = exclude_markdown
+        self._exclude_code_cell = exclude_code_cell
+
+
         super(Exporter, self).__init__(
             template_file='nbsphinx-rst.tpl', extra_loaders=[loader],
             config=traitlets.config.Config({
                 'HighlightMagicsPreprocessor': {'enabled': True},
                 # Work around https://github.com/jupyter/nbconvert/issues/720:
                 'RegexRemovePreprocessor': {'enabled': False},
+                'TemplateExporter':{
+                "exclude_output": exclude_output,
+                "exclude_input": exclude_input,
+                "exclude_markdown": exclude_markdown,
+                "exclude_code_cell": exclude_code_cell}
             }),
             filters={
                 'convert_pandoc': convert_pandoc,
@@ -834,6 +840,10 @@ class NotebookParser(rst.Parser):
             allow_errors=env.config.nbsphinx_allow_errors,
             timeout=env.config.nbsphinx_timeout,
             codecell_lexer=env.config.nbsphinx_codecell_lexer,
+            exclude_output=env.config.nbsphinx_exclude_output,
+            exclude_input=env.config.nbsphinx_exclude_input,
+            exclude_markdown=env.config.nbsphinx_exclude_markdown,
+            exclude_code_cell=env.config.nbsphinx_exclude_code_cell
         )
 
         try:
@@ -1740,6 +1750,11 @@ def setup(app):
     app.add_config_value('nbsphinx_allow_errors', False, rebuild='')
     app.add_config_value('nbsphinx_timeout', 30, rebuild='')
     app.add_config_value('nbsphinx_codecell_lexer', 'none', rebuild='env')
+    # hide or display input, output,....
+    app.add_config_value('nbsphinx_exclude_output', False, rebuild='env')
+    app.add_config_value('nbsphinx_exclude_input', False, rebuild='env')
+    app.add_config_value('nbsphinx_exclude_markdown', False, rebuild='env')
+    app.add_config_value('nbsphinx_exclude_code_cell', False, rebuild='env')
     # Default value is set in builder_inited():
     app.add_config_value('nbsphinx_prompt_width', None, rebuild='html')
     app.add_config_value('nbsphinx_responsive_width', '540px', rebuild='html')
