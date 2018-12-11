@@ -15,7 +15,7 @@ setup(
     install_requires=[
         'docutils',
         'jinja2',
-        'nbconvert!=5.4',
+        'nbconvert==5.4',
         'traitlets',
         'nbformat',
         'sphinx>=1.6',
