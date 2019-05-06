@@ -15,10 +15,10 @@ setup(
     install_requires=[
         'docutils',
         'jinja2',
-        'nbconvert==5.4',
+        'nbconvert',
         'traitlets',
         'nbformat',
-        'sphinx>=1.6',
+        'sphinx',
     ],
     author='Matthias Geier',
     author_email='Matthias.Geier@gmail.com',
